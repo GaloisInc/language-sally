@@ -87,7 +87,7 @@ subExpr x y = SEArith (SAAdd x ny)
 -- | Better constructor for multiplying expressions; checks that one of the
 -- operands is a constant.
 multExpr :: SallyExpr -> SallyExpr -> SallyExpr
-multExpr x y = if (isMultConst x || isMultConst y) then SEArith (SAMult x y)
+multExpr x y = if isMultConst x || isMultConst y then SEArith (SAMult x y)
                else error "multExpr: non-linear arithmetic is not supported"
 
 -- | Note: this is an over approximation, e.g. (x + (-x))*y is a constant 0
@@ -99,7 +99,7 @@ isMultConst (SEPre _) = False
 isMultConst (SEArith (SAAdd x y))  = isMultConst x && isMultConst y
 isMultConst (SEArith (SAMult x y)) = isMultConst x && isMultConst y
 isMultConst (SEArith (SAExpr _)) = False
-isMultConst (SEMux{}) = False
+isMultConst SEMux{} = False
 
 eqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 eqExpr x y = SEPre (SPEq x y)
@@ -118,6 +118,9 @@ geqExpr x y = SEPre (SPGEq x y)
 
 notExpr :: SallyExpr -> SallyExpr
 notExpr x = SEPre (SPNot (getPred x))
+
+xorExpr :: SallyExpr -> SallyExpr -> SallyExpr
+xorExpr x y = andExprs [orExprs [x, y], notExpr (andExprs [x, y])]
 
 neqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 neqExpr x y = notExpr (eqExpr x y)
