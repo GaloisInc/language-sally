@@ -195,13 +195,15 @@ instance ToSExp SallyPred where
 -- | Arithmetic terms
 data SallyArith = SAAdd   SallyExpr SallyExpr  -- ^ addition
                 | SAMult  SallyExpr SallyExpr  -- ^ constant mult
+                | SADiv   SallyExpr SallyExpr  -- ^ constant division
                 | SAExpr  SallyExpr            -- ^ general expression
   deriving (Show, Eq)
 
 instance ToSExp SallyArith where
   toSExp (SAAdd x y)  = SXList [bareText "+", toSExp x, toSExp y]
   toSExp (SAMult x y) = SXList [bareText "*", toSExp x, toSExp y]
-  toSExp (SAExpr e) = toSExp e
+  toSExp (SADiv x y)  = SXList [bareText "/", toSExp x, toSExp y]
+  toSExp (SAExpr e)   = toSExp e
 
 
 -- Compound Sally Types --------------------------------------------------------

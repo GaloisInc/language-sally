@@ -25,6 +25,7 @@ module Language.Sally.Expr (
   , addExpr
   , subExpr
   , multExpr
+  , divExpr
   , notExpr
   , eqExpr
   , neqExpr
@@ -89,6 +90,12 @@ subExpr x y = SEArith (SAAdd x ny)
 multExpr :: SallyExpr -> SallyExpr -> SallyExpr
 multExpr x y = if isMultConst x || isMultConst y then SEArith (SAMult x y)
                else error "multExpr: non-linear arithmetic is not supported"
+
+-- | Better constructor for dividing expressions; checks that the denominator
+-- is a constant.
+divExpr :: SallyExpr -> SallyExpr -> SallyExpr
+divExpr x y = if isMultConst y then SEArith (SADiv x y)
+              else error "multExpr: non-linear arithmetic is not supported"
 
 -- | Note: this is an over approximation, e.g. (x + (-x))*y is a constant 0
 -- times y, but will not pass this predicate.
