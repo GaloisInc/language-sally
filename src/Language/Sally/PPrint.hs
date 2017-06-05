@@ -9,7 +9,8 @@
 -- Portability :  unknown
 --
 -- Export top-level pretty printer functions taking general pretty-printable
--- values and writing them to 'stdout' or to 'String'.
+-- values and writing them to 'stdout' or to 'String'. These functions avoid
+-- the need to export the specific pretty printer library to clients.
 --
 
 module Language.Sally.PPrint (
@@ -17,7 +18,7 @@ module Language.Sally.PPrint (
     spPrint
   , pprintSystem
   , putSystem
-  , putSystemCompact
+  , putSExpCompact
   , putSystemLn
   , hPutSystem
 ) where
@@ -29,6 +30,7 @@ import qualified Data.ByteString.Lazy.Char8 as BS
 import System.IO (Handle)
 import Text.PrettyPrint.Leijen.Text
 
+import Language.Sally.SExpPP
 
 spPrint :: Pretty a => a -> String
 spPrint = L.unpack . pprintSystem
@@ -41,8 +43,8 @@ pprintSystem = displayT . renderPretty ribbon wid . pretty
 putSystem :: Pretty a => a -> IO ()
 putSystem = putDoc . pretty
 
-putSystemCompact :: Pretty a => a -> IO ()
-putSystemCompact = putDoc . sxPrettyCompact
+putSExpCompact :: ToSExp a => a -> IO ()
+putSExpCompact = putDoc . sxPrettyCompact
 
 putSystemLn :: Pretty a => a -> IO ()
 putSystemLn tr = putSystem tr >> putStrLn ""
