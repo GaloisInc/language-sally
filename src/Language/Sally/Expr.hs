@@ -39,6 +39,7 @@ module Language.Sally.Expr (
   , orExprs
   , varExpr
   , varExpr'
+  , xorExpr
   -- * complex expression builders
   , minExpr
   , countExpr
