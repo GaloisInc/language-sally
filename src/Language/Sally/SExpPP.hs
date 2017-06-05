@@ -41,6 +41,9 @@ class ToSExp a where
   sxPretty :: a -> Doc
   sxPretty = sxPrettyDefault . toSExp
 
+  sxPrettyCompact :: a -> Doc
+  sxPrettyCompact = sxPrettyCompactDefault . toSExp
+
 -- | Trivial 'ToSExp' instance for 'SExp'.
 instance ToSExp SExp where
   toSExp = id
@@ -53,6 +56,12 @@ sxPrettyDefault (SXList xs) = parens . group . align . vsep . fmap sxPretty $ xs
 -- sxPrettyDefault (SXList ll@(x:_)) = case x of
 --   SXBare _ -> parens (hang' (fillSep (map sxPretty ll)))
 --   SXList _ -> parens (fillSep (map sxPretty ll))
+
+-- | Pretty print an 'SExp' using the default *compact* layout scheme.
+sxPrettyCompactDefault :: SExp -> Doc
+sxPrettyCompactDefault (SXBare x) = x
+sxPrettyCompactDefault (SXList []) = lparen <> rparen
+sxPrettyCompactDefault (SXList xs) = parens . group . align . hsep . fmap sxPretty $ xs
 
 -- | Inject a text literal as a 'SExp'.
 bareText :: Text -> SExp
