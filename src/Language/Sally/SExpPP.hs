@@ -61,7 +61,7 @@ sxPrettyDefault (SXList xs) = parens . group . align . vsep . fmap sxPretty $ xs
 sxPrettyCompactDefault :: SExp -> Doc
 sxPrettyCompactDefault (SXBare x) = x
 sxPrettyCompactDefault (SXList []) = lparen <> rparen
-sxPrettyCompactDefault (SXList xs) = parens . group . align . hsep . fmap sxPretty $ xs
+sxPrettyCompactDefault (SXList xs) = parens . hsep . fmap sxPretty $ xs
 
 -- | Inject a text literal as a 'SExp'.
 bareText :: Text -> SExp

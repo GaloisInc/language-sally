@@ -17,6 +17,7 @@ module Language.Sally.PPrint (
     spPrint
   , pprintSystem
   , putSystem
+  , putSystemCompact
   , putSystemLn
   , hPutSystem
 ) where
@@ -40,8 +41,11 @@ pprintSystem = displayT . renderPretty ribbon wid . pretty
 putSystem :: Pretty a => a -> IO ()
 putSystem = putDoc . pretty
 
+putSystemCompact :: Pretty a => a -> IO ()
+putSystemCompact = putDoc . sxPrettyCompact
+
 putSystemLn :: Pretty a => a -> IO ()
 putSystemLn tr = putSystem tr >> putStrLn ""
 
 hPutSystem :: Pretty a => Handle -> a -> IO ()
-hPutSystem h tr = BS.hPutStr h . E.encodeUtf8 . pprintSystem $ tr
+hPutSystem h = BS.hPutStr h . E.encodeUtf8 . pprintSystem
