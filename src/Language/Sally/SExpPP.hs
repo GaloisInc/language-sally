@@ -25,8 +25,9 @@ module Language.Sally.SExpPP (
 ) where
 
 
-import Data.Text.Lazy (Text)
-import Text.PrettyPrint.Leijen.Text
+import Data.Text (Text)
+import qualified Data.Text as T
+import Text.PrettyPrint.ANSI.Leijen
 
 
 -- | A simple S-expression datatype with 'Doc' values at the leaves.
@@ -65,7 +66,7 @@ sxPrettyCompactDefault (SXList xs) = parens . hsep . fmap sxPretty $ xs
 
 -- | Inject a text literal as a 'SExp'.
 bareText :: Text -> SExp
-bareText = SXBare . text
+bareText = SXBare . text . T.unpack
 
 
 -- Misc Sally Specific Items ---------------------------------------------------

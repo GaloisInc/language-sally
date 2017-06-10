@@ -3,3 +3,4 @@ dist-newstyle
 dist
 .cabal-sandbox
 tags
+cabal.sandbox.config

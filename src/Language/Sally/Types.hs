@@ -11,8 +11,8 @@
 -- This module defines types reflecting the basic Sally input language
 -- sections and base types.
 --
+
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ViewPatterns #-}
 
 module Language.Sally.Types (
     -- * Name type
@@ -49,9 +49,9 @@ import Data.List (intersperse)
 import Data.Ratio (numerator, denominator)
 import Data.Sequence (Seq)
 import Data.String
-import Data.Text.Lazy (Text)
-import qualified Data.Text.Lazy as T
-import Text.PrettyPrint.Leijen.Text
+import Data.Text (Text)
+import qualified Data.Text as T
+import Text.PrettyPrint.ANSI.Leijen
 
 import Language.Sally.SExpPP
 
@@ -62,10 +62,10 @@ newtype Name = Name { textFromName :: Text }
   deriving (Show, Eq, Ord)
 
 instance Pretty Name where
-  pretty = text . textFromName
+  pretty = text . T.unpack . textFromName
 
 instance ToSExp Name where
-  toSExp = SXBare . text . textFromName
+  toSExp = SXBare . text . T.unpack . textFromName
 
 nameFromS :: String -> Name
 nameFromS = Name . T.pack
@@ -142,7 +142,7 @@ newtype SallyVar = SallyVar { textFromVar :: Text }
   deriving (Show, Eq)
 
 instance ToSExp SallyVar where
-  toSExp = SXBare . text . textFromVar
+  toSExp = SXBare . text . T.unpack . textFromVar
 
 varFromName :: Name -> SallyVar
 varFromName = SallyVar . textFromName
@@ -222,7 +222,7 @@ data SallyState = SallyState
   deriving (Show, Eq)
 
 instance ToSExp SallyState where
-  toSExp (SallyState {sName=sn, sVars=sv, sInVars=siv}) =
+  toSExp SallyState {sName=sn, sVars=sv, sInVars=siv} =
     SXList $ [ bareText "define-state-type"
              , toSExp sn
              , SXList $ map (\(n,t) -> SXList [toSExp n, toSExp t]) sv
@@ -239,7 +239,7 @@ data SallyStateFormula = SallyStateFormula
   deriving (Show, Eq)
 
 instance ToSExp SallyStateFormula where
-  toSExp (SallyStateFormula {sfName=sn, sfDomain=sd, sfPred=sp}) =
+  toSExp SallyStateFormula {sfName=sn, sfDomain=sd, sfPred=sp} =
     SXList [ bareText "define-states"
            , toSExp sn
            , toSExp sd
@@ -261,7 +261,7 @@ data SallyTransition = SallyTransition
   deriving (Show, Eq)
 
 instance ToSExp SallyTransition where
-  toSExp (SallyTransition {traName=tn, traDom=td, traLet=tl, traPred=tp}) =
+  toSExp SallyTransition {traName=tn, traDom=td, traLet=tl, traPred=tp} =
       SXList $ [ bareText "define-transition"
                , toSExp tn
                , toSExp td

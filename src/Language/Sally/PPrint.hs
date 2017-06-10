@@ -23,20 +23,21 @@ module Language.Sally.PPrint (
   , hPutSystem
 ) where
 
-import qualified Data.Text.Lazy as L
-import qualified Data.Text.Lazy.Encoding as E
-import qualified Data.ByteString.Lazy.Char8 as BS
+import qualified Data.Text as T
+import           Data.Text (Text)
+import qualified Data.Text.Encoding as E
+import qualified Data.ByteString.Char8 as BS
 
 import System.IO (Handle)
-import Text.PrettyPrint.Leijen.Text
+import Text.PrettyPrint.ANSI.Leijen
 
 import Language.Sally.SExpPP
 
 spPrint :: Pretty a => a -> String
-spPrint = L.unpack . pprintSystem
+spPrint = T.unpack . pprintSystem
 
-pprintSystem :: Pretty a => a -> L.Text
-pprintSystem = displayT . renderPretty ribbon wid . pretty
+pprintSystem :: Pretty a => a -> Text
+pprintSystem x = T.pack (displayS (renderPretty ribbon wid . pretty $ x) "")
   where ribbon = 72 / 80 :: Float
         wid    = 80
 
