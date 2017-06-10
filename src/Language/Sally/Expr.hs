@@ -149,7 +149,10 @@ muxExpr = SEMux
 andExprs :: [SallyExpr] -> SallyExpr
 andExprs es = SEPre $ andPreds (fmap getPred es)
 
+-- | And over multiple predicates, doing some small inline simplification
 andPreds :: [SallyPred] -> SallyPred
+andPreds []  = SPConst True  -- intersection over no sets is the whole universe
+andPreds [p] = p
 andPreds = SPAnd . flattenAnds . Seq.fromList
 
 orExprs :: [SallyExpr] -> SallyExpr
