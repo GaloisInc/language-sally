@@ -153,13 +153,16 @@ andExprs es = SEPre $ andPreds (fmap getPred es)
 andPreds :: [SallyPred] -> SallyPred
 andPreds []  = SPConst True  -- intersection over no sets is the whole universe
 andPreds [p] = p
-andPreds = SPAnd . flattenAnds . Seq.fromList
+andPreds ps = SPAnd . flattenAnds . Seq.fromList $ ps
 
 orExprs :: [SallyExpr] -> SallyExpr
 orExprs es = SEPre $ orPreds (fmap getPred es)
 
+-- | Or over multiple predicates, doing some small inline simplification
 orPreds :: [SallyPred] -> SallyPred
-orPreds = SPOr . flattenOrs . Seq.fromList
+orPreds [] = SPConst False  -- union over no sets is the empty set
+orPreds [p] = p
+orPreds ps = SPOr . flattenOrs . Seq.fromList $ ps
 
 varExpr :: SallyVar -> SallyExpr
 varExpr = SEVar
