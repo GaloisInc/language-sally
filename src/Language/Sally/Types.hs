@@ -58,6 +58,7 @@ import Language.Sally.SExpPP
 
 -- Name type for Sally namespaces and variables ------------------------------------
 
+-- | A 'Name' is a wrapped up strict Text.
 newtype Name = Name { textFromName :: Text }
   deriving (Show, Eq, Ord)
 
@@ -67,9 +68,11 @@ instance Pretty Name where
 instance ToSExp Name where
   toSExp = SXBare . text . T.unpack . textFromName
 
+-- | Convert a String to a 'Name'.
 nameFromS :: String -> Name
 nameFromS = Name . T.pack
 
+-- | Convert a Text to a 'Name'.
 nameFromT :: Text -> Name
 nameFromT = Name
 
@@ -138,12 +141,14 @@ instance ToSExp SallyBaseType where
 
 -- Untyped Expression AST for Sally --------------------------------------------
 
+-- | A 'SallyVar' is a wrapped up variable name.
 newtype SallyVar = SallyVar { textFromVar :: Text }
   deriving (Show, Eq)
 
 instance ToSExp SallyVar where
   toSExp = SXBare . text . T.unpack . textFromVar
 
+-- | Create a 'SallyVar' from a 'Name'.
 varFromName :: Name -> SallyVar
 varFromName = SallyVar . textFromName
 
