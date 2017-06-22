@@ -33,22 +33,31 @@ import Text.PrettyPrint.ANSI.Leijen
 
 import Language.Sally.SExpPP
 
+
+-- TODO Rename and prune these functions.
+
+-- | Render a value of the 'Pretty' class as a string.
 spPrint :: Pretty a => a -> String
 spPrint = T.unpack . pprintSystem
 
+-- | Render a value of the 'Pretty' class as "Data.Text".
 pprintSystem :: Pretty a => a -> Text
 pprintSystem x = T.pack (displayS (renderPretty ribbon wid . pretty $ x) "")
   where ribbon = 72 / 80 :: Float
         wid    = 80
 
+-- | Render a value of the pretty class to 'stdout'.
 putSystem :: Pretty a => a -> IO ()
 putSystem = putDoc . pretty
 
+-- | Render a value of the pretty class in a compact fashion to 'stdout'.
 putSExpCompact :: ToSExp a => a -> IO ()
 putSExpCompact = putDoc . sxPrettyCompact
 
+-- | Same as 'putSystem' but with a newline.
 putSystemLn :: Pretty a => a -> IO ()
 putSystemLn tr = putSystem tr >> putStrLn ""
 
+-- | Same as 'putSystem' but takes a 'Handle'.
 hPutSystem :: Pretty a => Handle -> a -> IO ()
 hPutSystem h = BS.hPutStr h . E.encodeUtf8 . pprintSystem
