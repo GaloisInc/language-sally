@@ -180,10 +180,10 @@ data SallyPred = SPConst Bool                    -- ^ boolean constant
                | SPImpl  SallyPred SallyPred     -- ^ implication
                | SPNot   SallyPred               -- ^ logical negation
                | SPEq    SallyExpr SallyExpr     -- ^ ==
-               | SPLEq   SallyExpr SallyExpr     -- ^ <=
-               | SPGEq   SallyExpr SallyExpr     -- ^ >=
-               | SPLt    SallyExpr SallyExpr     -- ^ <
-               | SPGt    SallyExpr SallyExpr     -- ^ >
+               | SPLEq   SallyExpr SallyExpr     -- ^ \<=
+               | SPGEq   SallyExpr SallyExpr     -- ^ \>=
+               | SPLt    SallyExpr SallyExpr     -- ^ \<
+               | SPGt    SallyExpr SallyExpr     -- ^ \>
   deriving (Show, Eq)
 
 instance ToSExp SallyPred where

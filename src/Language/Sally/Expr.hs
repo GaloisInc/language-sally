@@ -106,8 +106,8 @@ divExpr x y = if isMultConst y then SEArith (SADiv x y)
               else error "multExpr: non-linear arithmetic is not supported"
 
 -- | Determine if a Sally expression is a constant for the purposes of linear
--- multiplication. Note: this is an over approximation, e.g. (x + (-x))*y is a constant 0
--- times y, but will not pass this predicate.
+-- multiplication. Note: this is an over approximation, e.g. @(x + (-x))*y@
+-- is a constant equal to @0@ times @y@, but will not pass this predicate.
 isMultConst :: SallyExpr -> Bool
 isMultConst (SELit _) = True
 isMultConst (SEVar _) = False
@@ -121,19 +121,19 @@ isMultConst SEMux{} = False
 eqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 eqExpr x y = SEPre (SPEq x y)
 
--- | @a `ltExpr` b@ represents the expression @a < b@.
+-- | @a \`ltExpr\` b@ represents the expression @a \< b@.
 ltExpr :: SallyExpr -> SallyExpr -> SallyExpr
 ltExpr x y = SEPre (SPLt x y)
 
--- | @a `leqExpr` b@ represents the expression @a <= b@.
+-- | @a \`leqExpr\` b@ represents the expression @a \<= b@.
 leqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 leqExpr x y = SEPre (SPLEq x y)
 
--- | @a `gtExpr` b@ represents the expression @a > b@.
+-- | @a \`gtExpr\` b@ represents the expression @a > b@.
 gtExpr :: SallyExpr -> SallyExpr -> SallyExpr
 gtExpr x y = SEPre (SPGt x y)
 
--- | @a `geqExpr` b@ represents the expression @a >= b@.
+-- | @a \`geqExpr\` b@ represents the expression @a >= b@.
 geqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 geqExpr x y = SEPre (SPGEq x y)
 
@@ -160,7 +160,7 @@ getPred x = case x of
                                  ++ show x)
 
 -- | Create an if-then-else expression: @mux b x y@ represents the statement
--- "if b then x else y".
+-- @if b then x else y@.
 muxExpr :: SallyExpr -> SallyExpr -> SallyExpr -> SallyExpr
 muxExpr = SEMux
 
@@ -300,7 +300,7 @@ flattenOrs (viewl -> a :< rest) =
     _ -> a <| flattenOrs rest
 flattenOrs _ = undefined  -- make compiler happy :)
 
--- | Top-down rewriting of 'and' terms including constant folding and
+-- | Top-down rewriting of conjunctions of terms including constant folding and
 -- constructor reduction.
 simplifyAnds :: SallyPred -> SallyPred
 simplifyAnds p =
@@ -325,7 +325,7 @@ simplifyAnds p =
     SPGt    x y -> SPGt (constFold x) (constFold y)
     SPExpr  e   -> SPExpr (constFold e)
 
--- | Top-down rewriting of 'or' terms including constant folding and
+-- | Top-down rewriting of disjunctions including constant folding and
 -- constructor reduction.
 simplifyOrs :: SallyPred -> SallyPred
 simplifyOrs p =
