@@ -58,21 +58,27 @@ import Language.Sally.Types
 
 -- Better Constructors ---------------------------------------------------------
 
+-- | Create a constant boolean expression.
 boolExpr :: Bool -> SallyExpr
 boolExpr = SELit . SConstBool
 
+-- | Create a constant boolean predicate.
 boolPred :: Bool -> SallyPred
 boolPred = SPConst
 
+-- | Create a constant integer expression.
 intExpr :: Integral a => a -> SallyExpr
 intExpr = SELit . SConstInt . fromIntegral
 
+-- | Create an expression for zero as an integer in Sally.
 zeroExpr :: SallyExpr
 zeroExpr = intExpr (0 :: Int)
 
+-- | Create an expression for one as an integer in Sally.
 oneExpr :: SallyExpr
 oneExpr = intExpr (1 :: Int)
 
+-- | Create a constant real expression.
 realExpr :: Real a => a -> SallyExpr
 realExpr = SELit . SConstReal . toRational
 
@@ -82,6 +88,7 @@ realExpr = SELit . SConstReal . toRational
 addExpr :: SallyExpr -> SallyExpr -> SallyExpr
 addExpr x y = SEArith (SAAdd x y)
 
+-- | Subtract two 'SallyExpr'.
 subExpr :: SallyExpr -> SallyExpr -> SallyExpr
 subExpr x y = SEArith (SAAdd x ny)
   where ny = multExpr (SELit (SConstInt (-1))) y
@@ -98,7 +105,8 @@ divExpr :: SallyExpr -> SallyExpr -> SallyExpr
 divExpr x y = if isMultConst y then SEArith (SADiv x y)
               else error "multExpr: non-linear arithmetic is not supported"
 
--- | Note: this is an over approximation, e.g. (x + (-x))*y is a constant 0
+-- | Determine if a Sally expression is a constant for the purposes of linear
+-- multiplication. Note: this is an over approximation, e.g. (x + (-x))*y is a constant 0
 -- times y, but will not pass this predicate.
 isMultConst :: SallyExpr -> Bool
 isMultConst (SELit _) = True
@@ -109,27 +117,35 @@ isMultConst (SEArith (SAMult x y)) = isMultConst x && isMultConst y
 isMultConst (SEArith (SAExpr _)) = False
 isMultConst SEMux{} = False
 
+-- | Create the expression equating two given expressions.
 eqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 eqExpr x y = SEPre (SPEq x y)
 
+-- | @a `ltExpr` b@ represents the expression @a < b@.
 ltExpr :: SallyExpr -> SallyExpr -> SallyExpr
 ltExpr x y = SEPre (SPLt x y)
 
+-- | @a `leqExpr` b@ represents the expression @a <= b@.
 leqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 leqExpr x y = SEPre (SPLEq x y)
 
+-- | @a `gtExpr` b@ represents the expression @a > b@.
 gtExpr :: SallyExpr -> SallyExpr -> SallyExpr
 gtExpr x y = SEPre (SPGt x y)
 
+-- | @a `geqExpr` b@ represents the expression @a >= b@.
 geqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 geqExpr x y = SEPre (SPGEq x y)
 
+-- | Create the expression that is the boolean negation of the given one.
 notExpr :: SallyExpr -> SallyExpr
 notExpr x = SEPre (SPNot (getPred x))
 
+-- | Create the XOR of two Sally expressions.
 xorExpr :: SallyExpr -> SallyExpr -> SallyExpr
 xorExpr x y = andExprs [orExprs [x, y], notExpr (andExprs [x, y])]
 
+-- | Create the expression representing non-equality.
 neqExpr :: SallyExpr -> SallyExpr -> SallyExpr
 neqExpr x y = notExpr (eqExpr x y)
 
@@ -143,9 +159,13 @@ getPred x = case x of
               SEArith{} -> error ("notExpr: cannot turn expression into predicate: "
                                  ++ show x)
 
+-- | Create an if-then-else expression: @mux b x y@ represents the statement
+-- "if b then x else y".
 muxExpr :: SallyExpr -> SallyExpr -> SallyExpr -> SallyExpr
 muxExpr = SEMux
 
+-- | Form the conjunction of the given expressions (which should be
+-- predicates, but this is not checked).
 andExprs :: [SallyExpr] -> SallyExpr
 andExprs es = SEPre $ andPreds (fmap getPred es)
 
@@ -155,6 +175,8 @@ andPreds []  = SPConst True  -- intersection over no sets is the whole universe
 andPreds [p] = p
 andPreds ps = SPAnd . flattenAnds . Seq.fromList $ ps
 
+-- | Form the disjunction of the given expressions (which should be
+-- predicates, but this is not checked).
 orExprs :: [SallyExpr] -> SallyExpr
 orExprs es = SEPre $ orPreds (fmap getPred es)
 
@@ -164,9 +186,11 @@ orPreds [] = SPConst False  -- union over no sets is the empty set
 orPreds [p] = p
 orPreds ps = SPOr . flattenOrs . Seq.fromList $ ps
 
+-- | Create a variable expression.
 varExpr :: SallyVar -> SallyExpr
 varExpr = SEVar
 
+-- | Create a variable expression from a name.
 varExpr' :: Name -> SallyExpr
 varExpr' = SEVar . varFromName
 
@@ -209,9 +233,11 @@ constFold = simplifyExpr . constFold'
     constFold' (SEArith a) = SEArith (constFoldA a)
     constFold' (SEMux i t e) = constFoldM i t e
 
+-- | Perform constant folding over a Sally predicate.
 constFoldP :: SallyPred -> SallyPred
 constFoldP = simplifyOrs . simplifyAnds
 
+-- | Perform constant folding over a Sally arithmetic expression.
 constFoldA :: SallyArith -> SallyArith
 -- additive folding
 --   add zero
@@ -246,11 +272,13 @@ constFoldA (SAMult (SELit (SConstReal x)) (SELit (SConstReal y))) =
 constFoldA a@(SAMult _ _) = a
 constFoldA (SAExpr e) = SAExpr (constFold e)
 
+-- | Constant fold a mux expression
 constFoldM :: SallyExpr ->  SallyExpr -> SallyExpr -> SallyExpr
 constFoldM (SELit (SConstBool True)) t _  = constFold t
 constFoldM (SELit (SConstBool False)) _ f = constFold f
 constFoldM i t e = SEMux i (constFold t) (constFold e)
 
+-- | Recursively flatten a tree of @and@ expressions into an @and@ sequence.
 flattenAnds :: Seq SallyPred -> Seq SallyPred
 flattenAnds (viewl -> xs) =
   case xs of
@@ -263,6 +291,7 @@ flattenAnds (viewl -> xs) =
         -- SPConst False -> a <| Seq.empty
         _ -> a <| flattenAnds rest
 
+-- | Recursively flatten a tree of @or@ expressions into an @or@ sequence.
 flattenOrs :: Seq SallyPred -> Seq SallyPred
 flattenOrs (viewl -> EmptyL) = Seq.empty
 flattenOrs (viewl -> a :< rest) =
