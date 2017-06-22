@@ -71,5 +71,6 @@ bareText = SXBare . text . T.unpack
 
 -- Misc Sally Specific Items ---------------------------------------------------
 
+-- | A Sally comment.
 sallyCom :: Doc
 sallyCom = text ";;"

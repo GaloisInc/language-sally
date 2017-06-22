@@ -59,7 +59,7 @@ import Language.Sally.SExpPP
 -- Name type for Sally namespaces and variables ------------------------------------
 
 -- | A 'Name' is a wrapped up strict Text.
-newtype Name = Name { textFromName :: Text }
+newtype Name = Name { textFromName :: Text {- ^ unwrap a 'Name' -} }
   deriving (Show, Eq, Ord)
 
 instance Pretty Name where
@@ -160,7 +160,9 @@ data SallyExpr = SELit   SallyConst              -- ^ constant literal
                | SEMux   SallyExpr SallyExpr SallyExpr  -- ^ if then else
   deriving (Show, Eq)
 
+-- | A typeclass for types that can be converted to a 'SallyExpr'.
 class ToSallyExpr a where
+  -- | Convert a value to a 'SallyExpr'.
   toSallyExpr :: a -> SallyExpr
 
 instance ToSExp SallyExpr where
