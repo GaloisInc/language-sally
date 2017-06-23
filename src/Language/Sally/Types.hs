@@ -41,6 +41,7 @@ module Language.Sally.Types (
   , SallyLet
   , SallyTransition(..)
   , SallySystem(..)
+  , SallyQuery(..)
   , TrResult(..)
 ) where
 
@@ -296,6 +297,26 @@ instance ToSExp SallySystem where
                        , toSExp (sysTN ss)
                        ]
 
+-- | Data structure for representing queries in Sally. A query consists of an
+-- optional set of let bindings, followed by a predicate over those bindings.
+data SallyQuery = SallyQuery
+  { sqName :: Name       -- ^ system name
+  , sqLet :: [SallyLet]  -- ^ let bindings
+  , sqPred :: SallyPred  -- ^ predicate to query
+  }
+  deriving (Eq, Show)
+
+instance ToSExp SallyQuery where
+  toSExp sq = SXList $ bareText "query" :
+                       toSExp (sqName sq) :
+                       (if null listOfBinds
+                          then [pred]
+                          else [SXList [ bareText "let"
+                                       , SXList listOfBinds
+                                       , pred ]])
+    where
+      pred = toSExp (sqPred sq)
+      listOfBinds = map (\(v,e) -> SXList [toSExp v, toSExp e]) (sqLet sq)
 
 -- Translation Results ---------------------------------------------------------
 
@@ -308,6 +329,7 @@ data TrResult = TrResult
   , tresInit     :: SallyStateFormula    -- ^ initialization formula
   , tresTrans    :: [SallyTransition]    -- ^ system transitions
   , tresSystem   :: SallySystem          -- ^ system definition
+  , tresQueries  :: [SallyQuery]
   }
   deriving (Show, Eq)
 
@@ -331,8 +353,12 @@ instance Pretty TrResult where
               vcat (trans_comment : intersperse
                                       sallyCom
                                       (map sxPretty (tresTrans tr))) <$$>
-              -- needs to come last
-              vcat (system_comment : [sxPretty (tresSystem tr)])
+              -- needs to come (almost) last
+              vcat (system_comment : [sxPretty (tresSystem tr)]) <$$>
+              -- queries
+              vcat (queries_comment : intersperse
+                                        sallyCom
+                                        (map sxPretty (tresQueries tr)))
     where
       consts = if null (tresConsts tr) then text ";; NONE"
                else vcat (map sxPretty (tresConsts tr))
@@ -342,3 +368,4 @@ instance Pretty TrResult where
       formulas_comment = linebreak <> sallyCom <+> text "State Formulas"
       trans_comment  = linebreak <> sallyCom <+> text "Transitions"
       system_comment = linebreak <> sallyCom <+> text "System Definition"
+      queries_comment = linebreak <> sallyCom <+> text "Queries"
