@@ -1,5 +1,5 @@
 name:                language-sally
-version:             0.1.0.1
+version:             0.1.1.0
 synopsis:            AST and pretty printer for Sally
 description:         AST and pretty printer for the Sally
                      <https://github.com/SRI-CSL/sally> input language
