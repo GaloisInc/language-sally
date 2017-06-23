@@ -4,3 +4,7 @@ dist
 .cabal-sandbox
 tags
 cabal.sandbox.config
+.boring
+_darcs/
+.cmd_history
+*~
