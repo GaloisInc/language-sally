@@ -37,6 +37,7 @@ module Language.Sally.Expr (
   , andExprs
   , andPreds
   , orExprs
+  , orPreds
   , varExpr
   , varExpr'
   , xorExpr
