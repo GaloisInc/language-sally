@@ -42,6 +42,7 @@ module Language.Sally.Types (
   , SallyTransition(..)
   , SallySystem(..)
   , SallyQuery(..)
+  , mkSallyQuery
   , TrResult(..)
 ) where
 
@@ -303,8 +304,16 @@ data SallyQuery = SallyQuery
   { sqName :: Name       -- ^ system name
   , sqLet :: [SallyLet]  -- ^ let bindings
   , sqPred :: SallyPred  -- ^ predicate to query
+  , sqComment :: Text    -- ^ comment header for query
   }
   deriving (Eq, Show)
+
+-- | Convenience function to construct a minimal SallyQuery, omitting
+-- any optional information.
+mkSallyQuery :: Name -> [SallyLet] -> SallyPred -> SallyQuery
+mkSallyQuery name lets pred = SallyQuery { sqName=name, sqLet=lets, sqPred=pred
+                                         , sqComment=""
+                                         }
 
 instance ToSExp SallyQuery where
   toSExp sq = SXList $ bareText "query" :
@@ -356,9 +365,7 @@ instance Pretty TrResult where
               -- needs to come (almost) last
               vcat (system_comment : [sxPretty (tresSystem tr)]) <$$>
               -- queries
-              vcat (queries_comment : intersperse
-                                        sallyCom
-                                        (map sxPretty (tresQueries tr)))
+              vcat (queries_comment : concatMap prettyQuery (tresQueries tr))
     where
       consts = if null (tresConsts tr) then text ";; NONE"
                else vcat (map sxPretty (tresConsts tr))
@@ -369,3 +376,5 @@ instance Pretty TrResult where
       trans_comment  = linebreak <> sallyCom <+> text "Transitions"
       system_comment = linebreak <> sallyCom <+> text "System Definition"
       queries_comment = linebreak <> sallyCom <+> text "Queries"
+      prettyQuery q = [ sallyCom <+> text "Query " <+> text (T.unpack $ sqComment q)
+                      , sxPretty q ]
