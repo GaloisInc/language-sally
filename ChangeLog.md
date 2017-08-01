@@ -1,6 +1,6 @@
 # Revision history for language-sally
 
-## 0.1.2.0  -- 2017-06-02
+## 0.1.2.0  -- 2017-08-01
 
 * New contributors: Kevin Quick and Ryan Scott!
 * Added a comment field to `SallyQuery` so that queries in the input language
