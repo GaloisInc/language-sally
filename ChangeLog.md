@@ -1,5 +1,12 @@
 # Revision history for language-sally
 
+## 0.2.0.0  -- 2020-05-15
+
+* New contributor: Valentin Robert.
+* Major overhaul: language-sally now uses the What4 expression language and
+  printers.
+* New license: BSD3
+
 ## 0.1.2.0  -- 2017-08-01
 
 * New contributors: Kevin Quick and Ryan Scott!

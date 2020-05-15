@@ -1,0 +1,47 @@
+author:
+  - Benjamin Jones <bjones@galois.com>
+  - Valentin Robert <valentin.robert.42@gmail.com>
+
+copyright: Galois, Inc. 2017-2020
+
+dependencies:
+  - ansi-wl-pprint ^>= 0.6
+  - base >= 4.8 && < 4.14
+  - bytestring
+  - containers >= 0.5 && < 0.7
+  - io-streams
+  - mtl
+  - parameterized-utils >= 2.0
+  - text
+  - what4
+
+description: |
+  AST and pretty printer for the Sally
+  <https://github.com/SRI-CSL/sally> input language
+
+extra-source-files:
+  - ChangeLog.md
+
+ghc-options:
+  - -Wall
+  - -Werror=incomplete-patterns
+  - -Werror=missing-methods
+  - -Werror=overlapping-patterns
+
+github: GaloisInc/language-sally
+
+library:
+  exposed-modules:
+    - Language.Sally
+    - Language.Sally.SExp
+    - Language.Sally.Types
+    - Language.Sally.Writer
+  source-dirs: src
+
+license: BSD3
+
+name: language-sally
+
+synopsis: AST and pretty printer for Sally
+
+version: 0.2.0.0
