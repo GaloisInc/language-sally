@@ -266,7 +266,13 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
     names <- ask
     let field = Builder.fromString (show (names !! i))
     struct <- renderTerm <$> v
-    pure $ if struct == "init" then T field else T (struct <> "." <> field)
+    pure $
+      -- NOTE: We reserved the "init" and "query" namespaces as having a special
+      -- meaning.  This is necessary for getting What4 to not anonymize field
+      -- accesses.
+      if struct `elem` ["init", "query"]
+      then T field
+      else T (struct <> "." <> field)
 
   resetDeclaredStructs _conn = unhandled "resetDeclaredStructs"
 

@@ -1,5 +1,9 @@
 # Revision history for language-sally
 
+## 0.2.1.0  -- 2020-06-16
+
+* Reserve the "query" namespace to use for creating What4 queries.
+
 ## 0.2.0.0  -- 2020-05-15
 
 * New contributor: Valentin Robert.

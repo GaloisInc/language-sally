@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f8654545994791277648980ed977604b19361e97511bf77d1dd2c1115c221c82
+-- hash: cf789c99c940e2a0d317d91dd888d36143b95ea1b0124539a188ea71fb024867
 
 name:           language-sally
-version:        0.2.0.0
+version:        0.2.1.0
 synopsis:       AST and pretty printer for Sally
 description:    AST and pretty printer for the Sally
                 <https://github.com/SRI-CSL/sally> input language
