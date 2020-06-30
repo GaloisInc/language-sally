@@ -284,7 +284,7 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
   -- NOTE: at the moment, the commands SMTLib2 wants to output are pointless for
   -- sally, so we just silently skip them.
   writeCommand conn cmd =
-    if False -- for debugging purposes
+    if False -- set to True for debugging purposes
       then do
         let Cmd c = runSallyReader [] cmd
         let cmdout = Lazy.toStrict (Builder.toLazyText c)
