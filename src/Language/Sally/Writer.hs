@@ -115,7 +115,7 @@ instance SupportTermOps (SallyReader SMT2.Term) where
   intAbs = fmap intAbs
   intDiv = liftA2 intDiv
   intMod = liftA2 intMod
-  intDivisible = error "TODO"
+  intDivisible t n = intDivisible <$> t <*> pure n
   bvTerm a b = pure (bvTerm a b)
   bvNeg = fmap bvNeg
   bvAdd = liftA2 bvAdd
