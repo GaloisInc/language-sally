@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cf789c99c940e2a0d317d91dd888d36143b95ea1b0124539a188ea71fb024867
+-- hash: f3584724108f96dcafe8138730441bedf6a0cbe2f60e67dc094457ca40f09afb
 
 name:           language-sally
 version:        0.2.1.0
@@ -44,6 +44,7 @@ library
     , base >=4.8 && <4.14
     , bytestring
     , containers >=0.5 && <0.7
+    , extra
     , io-streams
     , mtl
     , parameterized-utils >=2.0

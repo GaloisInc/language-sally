@@ -27,20 +27,20 @@ module Language.Sally.SExp
 where
 
 import Control.Monad.Reader
+import qualified Control.Monad.State as State
 import Data.Bifunctor
+import Data.Char (isAlpha, isAlphaNum, isDigit)
 import Data.Functor.Const
 import Data.List (intersperse)
+import Data.List.Extra (dropPrefix)
 import qualified Data.Parameterized.Context as Ctx
 import Data.Parameterized.TraversableFC
   ( toListFC,
     traverseFC,
   )
 import qualified Data.Text as T
-import Data.Text.Lazy (toStrict)
-import Data.Text.Lazy.Builder
-  ( Builder,
-    toLazyText,
-  )
+import qualified Data.Text.Lazy as Lazy
+import qualified Data.Text.Lazy.Builder as Builder
 import Language.Sally.Types
 import Language.Sally.Writer
 import qualified System.IO.Streams as Streams
@@ -63,8 +63,8 @@ data SExp
   | -- | list of 'SExp', e.g. (foo a b)
     SXList [SExp]
 
-sexpOfBuilder :: Builder -> SExp
-sexpOfBuilder = SXBare . text . T.unpack . toStrict . toLazyText
+sexpOfBuilder :: Builder.Builder -> SExp
+sexpOfBuilder = SXBare . text . Lazy.unpack . Builder.toLazyText
 
 sexpOfBaseTypeRepr :: WriterConn t h -> What4.BaseTypeRepr bt -> IO SExp
 sexpOfBaseTypeRepr conn bt = do
@@ -90,6 +90,70 @@ sexpOfText = SXBare . text . T.unpack
 sexpOfTerm :: SMT2.Term -> SExp
 sexpOfTerm = sexpOfBuilder . SMT2.renderTerm
 
+newtype Substitutions = Substitutions {substitutions :: [(String, String)]}
+
+addSubstitution :: (T.Text, SMT2.Term) -> Substitutions -> Substitutions
+addSubstitution (binder, SMT2.T body) subs =
+  Substitutions $ (T.unpack binder, Lazy.unpack (Builder.toLazyText body)) : substitutions subs
+
+-- NOTE: this is done very inefficiently
+-- NOTE: we assume all binders have the form "x!1234"
+substitute :: (String, String) -> String -> String
+substitute s@('x' : '!' : restBinder, replacement) ('x' : '!' : restString) =
+  if takeWhile isDigit restBinder == takeWhile isDigit restString
+    then replacement ++ substitute s (dropPrefix restBinder restString)
+    else 'x' : '!' : substitute s restString
+substitute (s, _) ('x' : '!' : _) = error "It appears your binders do not look as expected: " ++ s ++ ". Please report."
+substitute s (c : restString) = c : substitute s restString
+substitute _ [] = []
+
+performSubstitutions ::
+  State.MonadState Substitutions m =>
+  SMT2.Term ->
+  m SMT2.Term
+performSubstitutions (SMT2.T t) = do
+  let term = Lazy.unpack (Builder.toLazyText t)
+  Substitutions subs <- State.get
+  let term' = foldr substitute term subs
+  pure $ SMT2.T $ Builder.fromText $ T.pack $ term'
+
+-- @isSpuriousLetBinding@ decides which let-bindings to inline.  For our current
+-- purposes, we want to inline access to state variables, i.e. "state.foo",
+-- "next.bar"
+-- This ought to be a regex, but I'm trying not to import a regex library just
+-- for this purpose...
+isSpuriousLetBinding :: SMT2.Term -> Bool
+isSpuriousLetBinding (SMT2.T t) =
+  let s = Lazy.unpack (Builder.toLazyText t)
+   in isSpurious s
+  where
+    isSpurious :: String -> Bool
+    isSpurious (c : rest) =
+      -- make sure it starts with a character
+      isAlpha c
+        && dropWhile isVariableSymbol (dropPrefix "." (dropWhile isVariableSymbol rest)) == ""
+    isSpurious [] = error "isSpurious called on empty string"
+    isVariableSymbol :: Char -> Bool
+    isVariableSymbol c = isAlphaNum c || c == '_'
+
+inlineSpuriousLetBindings ::
+  State.MonadState Substitutions m =>
+  ([(T.Text, SMT2.Term)], SMT2.Term) ->
+  m ([(T.Text, SMT2.Term)], SMT2.Term)
+inlineSpuriousLetBindings ([], body) = do
+  body' <- performSubstitutions body
+  return ([], body')
+inlineSpuriousLetBindings ((letBinder, letBody) : lets, body) =
+  do
+    letBody' <- performSubstitutions letBody
+    if isSpuriousLetBinding letBody'
+      then do
+        State.modify (addSubstitution (letBinder, letBody'))
+        inlineSpuriousLetBindings (lets, body)
+      else do
+        (lets', body') <- inlineSpuriousLetBindings (lets, body)
+        return ((letBinder, letBody') : lets', body')
+
 sexpOfExpr ::
   MonadIO m =>
   MonadReader [What4.SolverSymbol] m =>
@@ -102,10 +166,9 @@ sexpOfExpr conn expr = do
     CollectorResults {crBindings, crResult} <- runInSandbox conn $ do
       SallyReader r <- mkBaseExpr expr
       return (runReader r fields)
-    pure $
-      withLets
-        (map (bimap sexpOfText (sexpOfTerm . runSallyReader fields)) crBindings)
-        (sexpOfTerm crResult)
+    let crBindings' = second (runSallyReader fields) <$> crBindings
+    let ((bindings, result), _) = State.runState (inlineSpuriousLetBindings (crBindings', crResult)) (Substitutions [])
+    pure $ withLets (bimap sexpOfText sexpOfTerm <$> bindings) (sexpOfTerm result)
 
 -- | @sexpOfPred@ is an alias for @sexpOfExpr@ restricted to @What4.Pred@, that
 -- is, expressions returning a boolean.
