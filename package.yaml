@@ -6,7 +6,7 @@ copyright: Galois, Inc. 2017-2020
 
 dependencies:
   - ansi-wl-pprint ^>= 0.6
-  - base >= 4.8 && < 4.14
+  - base >= 4.8 && < 4.15
   - bytestring
   - containers >= 0.5 && < 0.7
   - extra
@@ -14,7 +14,7 @@ dependencies:
   - mtl
   - parameterized-utils >= 2.0
   - text
-  - what4
+  - what4 ^>= 1.1
 
 description: |
   AST and pretty printer for the Sally
@@ -45,4 +45,4 @@ name: language-sally
 
 synopsis: AST and pretty printer for Sally
 
-version: 0.2.1.0
+version: 0.3.0.0

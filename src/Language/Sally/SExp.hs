@@ -335,16 +335,13 @@ sexpOfSally
       sallyTransitions
     } = do
     bindings <- getSymbolVarBimap sym
-    inStr <- Streams.encodeUtf8 Streams.stderr
+    noInput <- Streams.nullInput
+    errorStream <- Streams.encodeUtf8 Streams.stderr
     conn <-
       liftIO $
         newWriter
-          ()
-          inStr
-          nullAcknowledgementAction
-          "NoSolver"
-          defaultWriteSMTLIB2Features
-          bindings
+          noInput errorStream nullAcknowledgementAction
+          "NoSolver" defaultWriteSMTLIB2Features bindings
     let symbols = toListFC getConst (sallyStateVarsNames sallyState)
     flip runReaderT symbols $ do
       state <- liftIO $ sexpOfSallyState conn sallyState

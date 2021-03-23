@@ -140,11 +140,7 @@ instance SupportTermOps (SallyReader SMT2.Term) where
   bvSLt = liftA2 bvSLt
   bvULt = liftA2 bvULt
   bvUDiv = liftA2 bvUDiv
-  floatPZero = pure . floatPZero
-  floatNZero = pure . floatNZero
-  floatNaN = pure . floatNaN
-  floatPInf = pure . floatPInf
-  floatNInf = pure . floatNInf
+  floatTerm p = pure . floatTerm p
   floatNeg = fmap floatNeg
   floatAbs = fmap floatAbs
   floatSqrt rm = fmap (floatSqrt rm)
@@ -153,8 +149,6 @@ instance SupportTermOps (SallyReader SMT2.Term) where
   floatMul rm = liftA2 (floatMul rm)
   floatDiv rm = liftA2 (floatDiv rm)
   floatRem = liftA2 floatRem
-  floatMin = liftA2 floatMin
-  floatMax = liftA2 floatMax
   floatFMA rm = liftA3 (floatFMA rm)
   floatEq = liftA2 floatEq
   floatFpEq = liftA2 floatFpEq
@@ -297,7 +291,7 @@ unhandled :: String -> IO a
 unhandled construct = error $ "Unhandled by language-sally: " ++ construct ++ ", please report to maintainers."
 
 newWriter ::
-  a ->
+  Streams.InputStream Text ->
   Streams.OutputStream Text ->
   -- | Action to run for consuming acknowledgement messages
   AcknowledgementAction t (SallyWriter a) ->
@@ -308,7 +302,7 @@ newWriter ::
   -- | Indicates if quantifiers are supported.
   SymbolVarBimap t ->
   IO (WriterConn t (SallyWriter a))
-newWriter _ h ack solver_name arithOption bindings = do
+newWriter in_stream out_stream ack solver_name arithOption bindings = do
   let initWriter = SallyWriter
-  conn <- newWriterConn h ack solver_name arithOption bindings initWriter
+  conn <- newWriterConn out_stream in_stream ack solver_name arithOption bindings initWriter
   return $! conn {supportFunctionDefs = False, supportQuantifiers = False}
