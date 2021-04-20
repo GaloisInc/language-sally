@@ -1,5 +1,9 @@
 # Revision history for language-sally
 
+## 0.3.0.0  -- 2021-03-22
+
+* Adapt to changes in Crucible and What4
+
 ## 0.2.1.0  -- 2020-06-16
 
 * Reserve the "query" namespace to use for creating What4 queries.
