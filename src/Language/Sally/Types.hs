@@ -39,7 +39,7 @@ where
 import Data.Functor.Const (Const (..))
 import qualified Data.Parameterized.Context as Ctx
 import Data.Text (Text)
-import What4.Expr.Builder
+import What4.Expr.Builder (Expr)
 import qualified What4.Interface as What4
 
 -- | For now, @Name@ is just an alias for @What4.SolverSymbol@
@@ -93,13 +93,13 @@ data SallyStateFormula t (stateType :: Ctx.Ctx What4.BaseType) = SallyStateFormu
 
 -- | A @SallyTransition@ represents a single transition for a given state type.
 data SallyTransition t = SallyTransition
-  { -- | The name of a transition is used to identify it
-    transitionName :: Name,
-    -- | The domain of a transition is the state type on which it operates
+  { -- | The domain of a transition is the state type on which it operates.
     transitionDomain :: Name,
-    -- | bindings for the transition relation
+    -- | The name of a transition is used to identify it.
+    transitionName :: Name,
+    -- | Bindings for the transition relation.
     -- traLet :: [SallyLet],
-    -- | The transition relation is a predicate over the current and next states
+    -- | The transition relation is a predicate over the current and next states.
     transitionRelation :: SallyPred t
   }
 

@@ -304,5 +304,5 @@ newWriter ::
   IO (WriterConn t (SallyWriter a))
 newWriter in_stream out_stream ack solver_name arithOption bindings = do
   let initWriter = SallyWriter
-  conn <- newWriterConn out_stream in_stream ack solver_name arithOption bindings initWriter
+  conn <- newWriterConn out_stream in_stream ack solver_name Strict arithOption bindings initWriter
   return $! conn {supportFunctionDefs = False, supportQuantifiers = False}
