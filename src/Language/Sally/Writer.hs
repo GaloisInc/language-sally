@@ -14,7 +14,7 @@
 -- Copyright   : (c) Galois Inc, 2020
 -- License     : BSD3
 --
--- Maintainer  : valentin.robert.42@gmail.com
+-- Maintainer  : val@galois.com
 -- Stability   : experimental
 -- |
 module Language.Sally.Writer
@@ -174,9 +174,11 @@ instance SupportTermOps (SallyReader SMT2.Term) where
   realDiv = liftA2 realDiv
   realSin = fmap realSin
   realCos = fmap realCos
+  realTan = fmap realTan
   realATan2 = liftA2 realATan2
   realSinh = fmap realSinh
   realCosh = fmap realCosh
+  realTanh = fmap realTanh
   realExp = fmap realExp
   realLog = fmap realLog
   smtFnApp f as = smtFnApp <$> f <*> sequence as
@@ -201,8 +203,8 @@ instance SupportTermOps (SallyReader SMT2.Term) where
 -- must substitute instances of @init.field@ with simply a naked @field@.  This
 -- is done in @structProj@.
 instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
-  forallExpr vars t = SMT2.forall (varBinding @a <$> vars) <$> t
-  existsExpr vars t = SMT2.exists (varBinding @a <$> vars) <$> t
+  forallExpr vars t = SMT2.forall_ (varBinding @a <$> vars) <$> t
+  existsExpr vars t = SMT2.exists_ (varBinding @a <$> vars) <$> t
 
   arrayConstant =
     case smtlib2arrayConstant @a of
