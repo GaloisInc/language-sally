@@ -4,7 +4,7 @@
 -- Copyright   : (c) Galois Inc, 2020
 -- License     : BSD3
 --
--- Maintainer  : valentin.robert.42@gmail.com
+-- Maintainer  : val@galois.com
 -- Stability   : experimental
 -- |
 module Language.Sally
