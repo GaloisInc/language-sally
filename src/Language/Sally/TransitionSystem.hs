@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 
 -- |
--- Module      : What4.TransitionSystem.Exporter.Sally
+-- Module      : Language.Sally.TransitionSystem
 -- Description : Export What4 transition system to the Sally format
 -- Copyright   : (c) Galois Inc, 2020-2021
 -- License     : BSD3
