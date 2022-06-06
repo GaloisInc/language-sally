@@ -19,6 +19,7 @@
 -- |
 module Language.Sally.Writer
   ( SallyReader (..),
+    SallyNames (..),
     SallyWriter,
     newWriter,
     runSallyReader,
@@ -71,13 +72,18 @@ import Prelude hiding (init)
 -- places where we don't have the list of symbols yet, so the "early-binding"
 -- style of @Env@ is not applicable, and we need the "late-binding" style of
 -- @Reader@.
-newtype SallyReader a = SallyReader (Reader [What4.SolverSymbol] a)
+newtype SallyReader a = SallyReader (Reader SallyNames a)
   deriving (Functor)
-  deriving (Applicative) via (Reader [What4.SolverSymbol])
-  deriving (Monad) via (Reader [What4.SolverSymbol])
-  deriving (MonadReader [What4.SolverSymbol]) via (Reader [What4.SolverSymbol])
+  deriving (Applicative) via (Reader SallyNames)
+  deriving (Monad) via (Reader SallyNames)
+  deriving (MonadReader SallyNames) via (Reader SallyNames)
 
-runSallyReader :: [What4.SolverSymbol] -> SallyReader a -> a
+data SallyNames = SallyNames
+  { inputNames :: [What4.SolverSymbol]
+  , stateNames :: [What4.SolverSymbol]
+  }
+
+runSallyReader :: SallyNames -> SallyReader a -> a
 runSallyReader symbols (SallyReader r) = runReader r symbols
 
 data SallyWriter a = SallyWriter
@@ -259,9 +265,13 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
 
   structProj _tps idx v = do
     let i = Ctx.indexVal idx
-    names <- ask
-    let field = Builder.fromString (show (names !! i))
+    allNames <- ask
     struct <- renderTerm <$> v
+    let names =
+          if struct == "input"
+          then inputNames allNames
+          else stateNames allNames
+    let field = Builder.fromString (show (names !! i))
     pure $
       -- NOTE: We reserved the "init" and "query" namespaces as having a special
       -- meaning.  This is necessary for getting What4 to not anonymize field
@@ -282,7 +292,7 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
   writeCommand conn cmd =
     if False -- set to True for debugging purposes
       then do
-        let Cmd c = runSallyReader [] cmd
+        let Cmd c = runSallyReader (SallyNames [] []) cmd
         let cmdout = Lazy.toStrict (Builder.toLazyText c)
         Streams.write (Just (cmdout <> "\n")) (connHandle conn)
         -- force a flush
