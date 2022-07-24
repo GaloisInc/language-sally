@@ -43,7 +43,7 @@ showBinding (FnSymbolBinding x) = show x
 displayTransitionSystem ::
   sym ~ ExprBuilder t st fs =>
   sym ->
-  TransitionSystem sym stateFields ->
+  TransitionSystem sym inputFields stateFields ->
   IO ()
 displayTransitionSystem sym transitionSystem =
   do
@@ -138,15 +138,17 @@ counterTransitions sym state next =
 -- | TODO
 counterTransitionSystem ::
   ExprBuilder t st fs ->
-  IO (TransitionSystem (ExprBuilder t st fs) CounterStateType)
+  IO (TransitionSystem (ExprBuilder t st fs) Ctx.EmptyCtx CounterStateType)
 counterTransitionSystem sym =
   do
     return $
       TransitionSystem
-        { stateReprs = knownRepr,
+        { inputReprs = knownRepr,
+          inputNames = knownRepr,
+          stateReprs = knownRepr,
           stateNames = counterFieldNames,
           initialStatePredicate = counterInitial sym,
-          stateTransitions = counterTransitions sym,
+          stateTransitions = const $ counterTransitions sym,
           queries = const (pure [])
         }
 
@@ -222,14 +224,16 @@ realsTransitions sym state next =
 -- | TODO
 realsTransitionSystem ::
   ExprBuilder t st fs ->
-  IO (TransitionSystem (ExprBuilder t st fs) RealsStateType)
+  IO (TransitionSystem (ExprBuilder t st fs) Ctx.EmptyCtx RealsStateType)
 realsTransitionSystem sym =
   do
     return $
       TransitionSystem
-        { stateReprs = knownRepr,
+        { inputReprs = knownRepr,
+          inputNames = knownRepr,
+          stateReprs = knownRepr,
           stateNames = realsFieldNames,
           initialStatePredicate = realsInitial sym,
-          stateTransitions = realsTransitions sym,
+          stateTransitions = const $ realsTransitions sym,
           queries = const (pure [])
         }
