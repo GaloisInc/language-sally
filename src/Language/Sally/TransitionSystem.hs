@@ -47,17 +47,17 @@ mySallyNames =
 
 sallyState ::
   SallyNames ->
-  TS.TransitionSystem sym stateType ->
-  S.SallyState stateType Ctx.EmptyCtx
+  TS.TransitionSystem sym inputs stateType ->
+  S.SallyState stateType inputs
 sallyState
   (SallyNames {stateName})
-  (TS.TransitionSystem {TS.stateNames, TS.stateReprs}) =
+  (TS.TransitionSystem {TS.inputNames, TS.inputReprs, TS.stateNames, TS.stateReprs}) =
     S.SallyState
       { S.sallyStateName = stateName,
         S.sallyStateVars = stateReprs,
         S.sallyStateVarsNames = stateNames,
-        S.sallyStateInputs = Ctx.Empty,
-        S.sallyStateInputsNames = Ctx.Empty
+        S.sallyStateInputs = inputReprs,
+        S.sallyStateInputsNames = inputNames
       }
 
 sallyQuery :: S.Name -> What4.Pred (ExprBuilder t st fs) -> S.SallyQuery t
@@ -72,8 +72,8 @@ sallyQuery systemName sallyQueryPredicate =
 exportTransitionSystem ::
   ExprBuilder t st fs ->
   SallyNames ->
-  TS.TransitionSystem (ExprBuilder t st fs) stateType ->
-  IO (S.Sally t stateType Ctx.EmptyCtx Ctx.EmptyCtx)
+  TS.TransitionSystem (ExprBuilder t st fs) inputs stateType ->
+  IO (S.Sally t stateType inputs Ctx.EmptyCtx)
 exportTransitionSystem
   sym
   (sn@SallyNames {initialName, mainTransitionName, stateName, systemName})

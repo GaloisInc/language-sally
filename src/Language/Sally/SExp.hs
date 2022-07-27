@@ -156,7 +156,7 @@ inlineSpuriousLetBindings ((letBinder, letBody) : lets, body) =
 
 sexpOfExpr ::
   MonadIO m =>
-  MonadReader [What4.SolverSymbol] m =>
+  MonadReader SallyNames m =>
   WriterConn sym (SallyWriter ()) ->
   Expr sym bt ->
   m SExp
@@ -174,7 +174,7 @@ sexpOfExpr conn expr = do
 -- is, expressions returning a boolean.
 sexpOfPred ::
   MonadIO m =>
-  MonadReader [What4.SolverSymbol] m =>
+  MonadReader SallyNames m =>
   WriterConn sym (SallyWriter ()) ->
   Expr sym What4.BaseBoolType ->
   m SExp
@@ -239,7 +239,7 @@ sexpOfSallyState
 
 sexpOfSallyStateFormula ::
   MonadIO m =>
-  MonadReader [What4.SolverSymbol] m =>
+  MonadReader SallyNames m =>
   WriterConn t (SallyWriter ()) ->
   SallyStateFormula t stateType ->
   m SExp
@@ -257,7 +257,7 @@ sexpOfSallyStateFormula
 
 sexpOfSallyTransition ::
   MonadIO m =>
-  MonadReader [What4.SolverSymbol] m =>
+  MonadReader SallyNames m =>
   WriterConn t (SallyWriter ()) ->
   SallyTransition t ->
   m SExp
@@ -298,7 +298,7 @@ sexpOfSallySystem
 
 sexpOfSallyQuery ::
   MonadIO m =>
-  MonadReader [What4.SolverSymbol] m =>
+  MonadReader SallyNames m =>
   WriterConn sym (SallyWriter ()) ->
   SallyQuery sym ->
   m SExp
@@ -342,7 +342,9 @@ sexpOfSally
         newWriter
           noInput errorStream nullAcknowledgementAction
           "NoSolver" defaultWriteSMTLIB2Features bindings
-    let symbols = toListFC getConst (sallyStateVarsNames sallyState)
+    let symbols = SallyNames
+          (toListFC getConst (sallyStateInputsNames sallyState))
+          (toListFC getConst (sallyStateVarsNames sallyState))
     flip runReaderT symbols $ do
       state <- liftIO $ sexpOfSallyState conn sallyState
       formulas <- mapM (sexpOfSallyStateFormula conn) sallyFormulas
