@@ -230,6 +230,8 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
 
   pushCommand _ = pure $ SMT2.push 1
   popCommand _ = pure $ SMT2.pop 1
+  push2Command _ = pure $ SMT2.push 2
+  pop2Command _ = pure $ SMT2.pop 2
   resetCommand _ = pure SMT2.resetAssertions
 
   checkCommands _ = [pure SMT2.checkSat]
@@ -238,6 +240,9 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
 
   getUnsatAssumptionsCommand _ = pure SMT2.getUnsatAssumptions
   getUnsatCoreCommand _ = pure SMT2.getUnsatCore
+  getAbductCommand _ nm e = SMT2.getAbduct nm <$> e
+  getAbductNextCommand _ = pure SMT2.getAbductNext
+
   setOptCommand _ = (pure <$>) <$> SMT2.setOption
 
   declareCommand _proxy v argTypes retType =
