@@ -230,6 +230,8 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
 
   pushCommand _ = pure $ SMT2.push 1
   popCommand _ = pure $ SMT2.pop 1
+  push2Command _ = unhandled "push2Command"
+  pop2Command _ = unhandled "pop2Command"
   resetCommand _ = pure SMT2.resetAssertions
 
   checkCommands _ = [pure SMT2.checkSat]
@@ -238,6 +240,8 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
 
   getUnsatAssumptionsCommand _ = pure SMT2.getUnsatAssumptions
   getUnsatCoreCommand _ = pure SMT2.getUnsatCore
+  getAbductCommand _ _ _ = unhandled "getAbductCommand"
+  getAbductNextCommand _ = unhandled "getAbductNextCommand"
   setOptCommand _ = (pure <$>) <$> SMT2.setOption
 
   declareCommand _proxy v argTypes retType =
@@ -251,6 +255,10 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
   defineCommand _proxy f args return_type e =
     let resolveArg (var, Some tp) = (var, asSMT2Type @a tp)
      in SMT2.defineFun f (resolveArg <$> args) (asSMT2Type @a return_type) <$> e
+
+  synthFunCommand _ _ _ _ = unhandled "synthFunCommand"
+  declareVarCommand _ _ _ = unhandled "declareVarCommand"
+  constraintCommand _ _ = unhandled "constraintCommand"
 
   stringTerm bs = pure $ smtlib2StringTerm @a bs
   stringLength x = smtlib2StringLength @a <$> x
@@ -299,7 +307,7 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
         Streams.write (Just "") (connHandle conn)
       else pure ()
 
-unhandled :: String -> IO a
+unhandled :: String -> a
 unhandled construct = error $ "Unhandled by language-sally: " ++ construct ++ ", please report to maintainers."
 
 newWriter ::
