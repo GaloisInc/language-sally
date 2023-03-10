@@ -257,6 +257,11 @@ instance SMTLib2Tweaks a => SMTWriter (SallyWriter a) where
     let resolveArg (var, Some tp) = (var, asSMT2Type @a tp)
      in SMT2.defineFun f (resolveArg <$> args) (asSMT2Type @a return_type) <$> e
 
+  synthFunCommand _proxy f args ret_tp =
+    pure $ SMT2.synthFun f (map (\(var, Some tp) -> (var, asSMT2Type @a tp)) args) (asSMT2Type @a ret_tp)
+  declareVarCommand _proxy v tp = pure $ SMT2.declareVar v (asSMT2Type @a tp)
+  constraintCommand _proxy e = SMT2.constraint <$> e
+
   stringTerm bs = pure $ smtlib2StringTerm @a bs
   stringLength x = smtlib2StringLength @a <$> x
   stringAppend xs = smtlib2StringAppend @a <$> sequence xs
