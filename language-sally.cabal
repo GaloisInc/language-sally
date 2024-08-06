@@ -25,7 +25,7 @@ source-repository head
 
 common dependencies
   build-depends:
-    , base                     >=4.8   && <4.19
+    , base                     >=4.8   && <4.20
     , parameterized-utils      >=2.0   && <2.2
     , what4                    >=1.4
     , what4-transition-system  >=0.0.3
