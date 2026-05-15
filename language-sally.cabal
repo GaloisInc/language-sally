@@ -25,7 +25,7 @@ source-repository head
 
 common dependencies
   build-depends:
-    , base                     >=4.8   && <4.20
+    , base                     >=4.8   && <4.22
     , parameterized-utils      >=2.0   && <2.4
     , what4                    >=1.4
     , what4-transition-system  >=0.0.3
@@ -49,7 +49,7 @@ library
   build-depends:
     , ansi-wl-pprint           >=0.6
     , bytestring
-    , containers               >=0.5   && <0.7
+    , containers               >=0.5   && <0.8
     , extra
     , io-streams
     , mtl
