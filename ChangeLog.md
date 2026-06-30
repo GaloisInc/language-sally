@@ -1,5 +1,14 @@
 # Revision history for language-sally
 
+## 0.5.0.0  -- 2026-06-30
+
+* Switch from `ansi-wl-pprint` to `prettyprinter`.
+* Routine maintenance of depends, use current what4.
+
+## 0.4.0.0  -- 2022-02-12
+
+* Add `Language.Sally.TransitionSystem`
+
 ## 0.3.0.0  -- 2021-03-22
 
 * Adapt to changes in Crucible and What4

@@ -44,9 +44,8 @@ import qualified Data.Text.Lazy.Builder as Builder
 import Language.Sally.Types
 import Language.Sally.Writer
 import qualified System.IO.Streams as Streams
-import Text.PrettyPrint.ANSI.Leijen hiding
-  ( (<$>),
-  )
+import qualified Prettyprinter as PP
+import Prettyprinter ((<+>))
 import What4.Expr.Builder
 import qualified What4.Interface as What4
 import qualified What4.Protocol.SMTLib2 as SMT2
@@ -58,13 +57,13 @@ import What4.Symbol
 
 -- | A simple S-expression datatype with 'Doc' values at the leaves.
 data SExp
-  = -- | Bare symbol or literal represented by a 'Doc'
-    SXBare Doc
+  = -- | Bare symbol or literal represented by a 'PP.Doc'
+    SXBare (PP.Doc ())
   | -- | list of 'SExp', e.g. (foo a b)
     SXList [SExp]
 
 sexpOfBuilder :: Builder.Builder -> SExp
-sexpOfBuilder = SXBare . text . Lazy.unpack . Builder.toLazyText
+sexpOfBuilder = SXBare . PP.pretty . Lazy.unpack . Builder.toLazyText
 
 sexpOfBaseTypeRepr :: WriterConn t h -> What4.BaseTypeRepr bt -> IO SExp
 sexpOfBaseTypeRepr conn bt = do
@@ -85,7 +84,7 @@ withLets bindings expr = SXList [sexpOfText "let", SXList sexpBindings, expr]
     sexpBindings = map (\(v, e) -> SXList [v, e]) bindings
 
 sexpOfText :: T.Text -> SExp
-sexpOfText = SXBare . text . T.unpack
+sexpOfText = SXBare . PP.pretty
 
 sexpOfTerm :: SMT2.Term -> SExp
 sexpOfTerm = sexpOfBuilder . SMT2.renderTerm
@@ -181,27 +180,28 @@ sexpOfPred ::
 sexpOfPred = sexpOfExpr
 
 sexpOfSymbol :: What4.SolverSymbol -> SExp
-sexpOfSymbol = SXBare . text . T.unpack . solverSymbolAsText
+sexpOfSymbol = SXBare . PP.pretty . solverSymbolAsText
 
 -- | Pretty print an 'SExp' using the default layout scheme.
-sexpToDoc :: SExp -> Doc
+sexpToDoc :: SExp -> PP.Doc ()
 sexpToDoc (SXBare x) = x
-sexpToDoc (SXList []) = lparen <> rparen
-sexpToDoc (SXList xs) = parens . group . align . vsep . fmap sexpToDoc $ xs
+sexpToDoc (SXList []) = PP.lparen <> PP.rparen
+sexpToDoc (SXList xs) =
+  PP.parens $ PP.group $ PP.align $ PP.vsep $ map sexpToDoc xs
 
 -- sxPrettyDefault (SXList ll@(x:_)) = case x of
 --   SXBare _ -> parens (hang' (fillSep (map sxPretty ll)))
 --   SXList _ -> parens (fillSep (map sxPretty ll))
 
 -- | Pretty print an 'SExp' using the default *compact* layout scheme.
-sexpToCompactDoc :: SExp -> Doc
+sexpToCompactDoc :: SExp -> PP.Doc ()
 sexpToCompactDoc (SXBare x) = x
-sexpToCompactDoc (SXList []) = lparen <> rparen
-sexpToCompactDoc (SXList xs) = parens . hsep . fmap sexpToDoc $ xs
+sexpToCompactDoc (SXList []) = PP.lparen <> PP.rparen
+sexpToCompactDoc (SXList xs) = PP.parens $ PP.hsep $ map sexpToDoc xs
 
 -- | A Sally comment
-sallyComment :: Doc
-sallyComment = text ";;"
+sallyComment :: PP.Doc ()
+sallyComment = ";;"
 
 sexpsOfNamedContext ::
   WriterConn t h ->
@@ -317,7 +317,7 @@ sexpOfSallyQuery
       ]
 
 -- | Sally requires a special printer since it is not an s-expression. The
--- order of the 'vcat' items is important because Sally is sensitive to names
+-- order of the 'PP.vcat' items is important because Sally is sensitive to names
 -- being declared before they are used in a model file.
 sexpOfSally ::
   ExprBuilder t st fs ->
@@ -356,35 +356,37 @@ sexpOfSally
       let ppConsts = toListFC getConst constants
       let consts =
             if null ppConsts
-              then text ";; NONE"
-              else vcat (sexpToDoc <$> ppConsts)
+              then ";; NONE"
+              else PP.vcat (map sexpToDoc ppConsts)
       pure
         $ SXBare
-        $ vcat [consts_comment, consts, state_comment, sexpToDoc state]
-          <$$> vcat
+        $ PP.vcat [consts_comment, consts, state_comment, sexpToDoc state]
+          <$$> PP.vcat
             ( formulas_comment
                 : intersperse sallyComment (map sexpToDoc formulas)
             )
           <$$>
           -- needs to come after formulas
-          vcat [init_comment, sexpToDoc initial]
+          PP.vcat [init_comment, sexpToDoc initial]
           <$$>
           -- needs to come after state, init, and formulas
-          vcat
+          PP.vcat
             ( trans_comment
                 : intersperse sallyComment (map sexpToDoc transitions)
             )
           <$$>
           -- needs to come (almost) last
-          vcat (system_comment : [sexpToDoc system])
+          PP.vcat (system_comment : [sexpToDoc system])
           <$$>
           -- queries
-          vcat (queries_comment : map sexpToDoc queries)
+          PP.vcat (queries_comment : map sexpToDoc queries)
     where
-      consts_comment = sallyComment <+> text "Constants"
-      state_comment = linebreak <> sallyComment <+> text "State type"
-      init_comment = linebreak <> sallyComment <+> text "Initial State"
-      formulas_comment = linebreak <> sallyComment <+> text "State Formulas"
-      trans_comment = linebreak <> sallyComment <+> text "Transitions"
-      system_comment = linebreak <> sallyComment <+> text "System Definition"
-      queries_comment = linebreak <> sallyComment <+> text "Queries"
+      consts_comment = sallyComment <+> "Constants"
+      state_comment = PP.line' <> sallyComment <+> "State type"
+      init_comment = PP.line' <> sallyComment <+> "Initial State"
+      formulas_comment = PP.line' <> sallyComment <+> "State Formulas"
+      trans_comment = PP.line' <> sallyComment <+> "Transitions"
+      system_comment = PP.line' <> sallyComment <+> "System Definition"
+      queries_comment = PP.line' <> sallyComment <+> "Queries"
+
+      doc1 <$$> doc2 = doc1 <> PP.line' <> doc2
