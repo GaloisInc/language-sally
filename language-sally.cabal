@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               language-sally
-version:            0.4.0.0
+version:            0.5.0.0
 synopsis:           AST and pretty printer for Sally
 description:
   AST and pretty printer for the Sally
@@ -47,12 +47,12 @@ library
     -Werror=overlapping-patterns
 
   build-depends:
-    , ansi-wl-pprint           >=0.6
     , bytestring
     , containers               >=0.5   && <0.8
     , extra
     , io-streams
     , mtl
+    , prettyprinter            >=1.7
     , text
 
   default-language: Haskell2010
